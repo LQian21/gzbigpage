@@ -1,15 +1,22 @@
+import { chartFontStyle } from '../static'
 const option = {
+  textStyle: chartFontStyle,
   title: {
-    text: '供应商业务类型',
+    text: '供应商\n业务类型',
     left: 'center',
-    top: '49%',
+    top: '41%',
     textStyle: {
-      fontSize: 13,
+      fontSize: 20,
       color: '#fff',
-      fontStyle: 'normal',
-      fontWeight: '400',
-      fontFamily: 'PingFangSC-Regular,PingFang SC;'
+      lineHeight: 32,
+      fontWeight: 'bold'
     }
+  },
+  grid: {
+    top: '15%',
+    left: '20%',
+    right: '15%',
+    bottom: '15%'
   },
   color: ['#D55CE7', '#6B51FE', '#E85089', '#AD6BE7', '#F5952F', '#58ABF1', '#F2DA32', '#16D4D2'],
   tooltip: {
@@ -20,21 +27,21 @@ const option = {
     {
       name: '统计',
       type: 'pie',
-      radius: [70, 150],
+      radius: [60, 120],
       center: ['50%', '50%'],
       label: {
         show: true,
         // formatter: function (params: any) {
         //   return (params.value) * 100 + '%' + '\n' + params.name
         // },
-        "formatter": "{per|{d}%} \n {b|{b}}  ",
-        rich:{
-          b:{
-            color:'#C6EBFA'
+        formatter: '{per|{d}%} \n {b|{b}}  ',
+        rich: {
+          b: {
+            color: '#C6EBFA'
           }
         },
         textStyle: {
-          fontSize: 14,
+          fontSize: 16,
           color: '#4FFFE4'
         },
         position: 'outside'

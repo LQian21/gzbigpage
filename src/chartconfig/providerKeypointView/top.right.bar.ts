@@ -1,3 +1,4 @@
+import { chartFontStyle } from '../static'
 const option = {
   tooltip: {
     trigger: 'axis',
@@ -7,8 +8,8 @@ const option = {
   },
   grid: {
     top: '12%',
-    left: '1%',
-    right: '1%',
+    left: '50',
+    right: '2%',
     bottom: '8%',
     containLabel: true
   },
@@ -18,15 +19,18 @@ const option = {
     top: '2%',
     textStyle: {
       color: '#C7EBF9',
-      fontSize: 14
+      fontSize: 16
     },
     itemWidth: 15,
     itemHeight: 15,
     data: ['法律诉讼', '经营异常', '行政处罚']
   },
-  xAxis:{
+  xAxis: {
+    triggerEvent: true,
     axisLabel: {
-      color: '#398FD1'
+      color: '#398FD1',
+      fontSize: 16,
+      interval: 0
     },
     axisLine: {
       lineStyle: {
@@ -48,12 +52,12 @@ const option = {
     data: ['01月', '02月', '03月', '04月', '05月', '06月', '07月', '08月', '09月', '10月', '11月', '12月']
   },
   yAxis: {
-    name:'单位：万元',
     axisTick: {
       show: false
     },
     axisLabel: {
-        color: '#398FD1'
+      color: '#398FD1',
+      fontSize: 16
     },
     splitLine: {
       lineStyle: {

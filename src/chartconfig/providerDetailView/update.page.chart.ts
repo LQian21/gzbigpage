@@ -34,12 +34,12 @@ const curDate: Date = new Date()
 const defDate: string = curDate.getFullYear() + (curDate.getMonth() > 8 ? '-' + curDate.getMonth() + 1 : '-0' + (curDate.getMonth() + 1))
 // const curentYears: number[] = [curDate.getFullYear() - 2, curDate.getFullYear() - 1, curDate.getFullYear()]
 //top图表的数据更新逻辑
-function handleTopTable(resData: AxiosResponse<ResponseBody>, encodeList: Record<string, any>) {
+function handleTopTable(resData: AxiosResponse<ResponseBody>, encodeList: Record<string, any>, currentProvider: any) {
   console.log(resData, encodeList)
 
   const encode = encodeList['encode01'].data.data
-  const gysbm: string = resData.data.data[0].gysbm
-  const gysmc: string = resData.data.data[0].gysmc as string
+  const gysbm: string = currentProvider.gysbm
+  const gysmc: string = currentProvider.gysmc as string
   encode.map((val: Record<string, any>) => {
     const t = resData.data.data.find((ele) => ele.idxCode === val.idxCde) as Record<string, any>
     val.value = t.idxValue
@@ -118,7 +118,7 @@ function handleBottomRight(resData: AxiosResponse<ResponseBody>, encodeList: Rec
   const config = pageChartsConfig.providerDetailView.child['detail-view-bottom-right']
   const encodes = encodeList['encode06'].data.data
   const encode1 = encodes[0].idxCde
-  const encode2 = encodes[0].idxCde
+  const encode2 = encodes[1].idxCde
   const data1: Record<string, any>[] = []
   const data2: Record<string, any>[] = []
   resData.data.data.forEach((val) => {
@@ -132,11 +132,11 @@ function handleBottomRight(resData: AxiosResponse<ResponseBody>, encodeList: Rec
   config.series[0].data = data1
   config.series[1].data = data2
 }
-function handleAllDataRequest(_this: Record<string, any>, reqArr: Promise<AxiosResponse<ResponseBody>>[], providerList: any, encodeList: Record<string, any>) {
+function handleAllDataRequest(_this: Record<string, any>, reqArr: Promise<AxiosResponse<ResponseBody>>[], providerList: any, encodeList: Record<string, any>, currentProvider: any) {
   Promise.all(reqArr)
     .then(([resTop, centerLeft, center, centerRight, bottomLeft, bottomRight]) => {
       _this.$message.success('数据加载成功！')
-      handleTopTable(resTop, encodeList)
+      handleTopTable(resTop, encodeList, currentProvider)
       handleCenterLeft(centerLeft, encodeList)
       handleCenter(center)
       handleCenterRight(centerRight, encodeList)
@@ -158,78 +158,97 @@ function handleAllDataRequest(_this: Record<string, any>, reqArr: Promise<AxiosR
 
 const updateProviderDetailView = async (_this: Record<string, any>) => {
   //全局统一参数
-  // const date = store.state.selectDate
-  const date = '2020-07'
+  const date = store.state.selectDate
   const citycode = store.state.cityCode
   const businesstype = store.state.buniessType
-  console.log(_this.$route.params)
+  //   console.log(_this.$route.params)
+  const currentProviderJcStr: string | null = window.sessionStorage.getItem('keypointProvider')
+  let currentProviderJc: any
+  if (currentProviderJcStr) {
+    currentProviderJc = JSON.parse(currentProviderJcStr as string)
+  } else {
+    _this.$message.error('当前不存在供应商，请重新进入或刷新页面！')
+    return
+  }
+  //   const currentProviderJc: any = store.state.keypointProvider
   //   const currentProvider = _this.$route.params.provider
-  const currentProvider = { accountCode: 'A52', gysbm: 'G000117879', gysjc: '贵通服', gysmc: '贵州省通信产业服务有限公司', monthId: '2020-07', xh: '1', ywlx: 'all' }
-  let providerList: AxiosResponse<unknown>
+  //   const currentProvider = { accountCode: 'A52', gysbm: 'G000117879', gysjc: '贵通服', gysmc: '贵州省通信产业服务有限公司', monthId: '2020-07', xh: '1', ywlx: 'all' }
   try {
     //请求供应商编码和名称
-    providerList = await requestPostData<Record<string, string>, ResponseBody, unknown>(getProvider, { accountCode: citycode, monthId: date, ywlx: businesstype })
-  } catch (error) {
-    _this.$message.error('供应商编码加载失败,请刷新重试！')
-  }
-  //获取该页面所有图表的指标编码
-  Promise.all([
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0301' }),
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0302' }),
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0303' }),
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0304' }),
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0305' }),
-    requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0306' })
-  ])
-    .then(([encode01, encode02, encode03, encode04, encode05, encode06]) => {
-      const t_this = _this
-      const encodeMap = {
-        encode01,
-        encode02,
-        encode03,
-        encode04,
-        encode05,
-        encode06
-      }
-      //top图表请求参数
-      const encodetop = encode01.data.data.map((val) => val.idxCde)
-      const topParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodetop, [currentProvider.gysbm], businesstype))
-      const topPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, topParam)
-      //center-eft图表请求参数
-      const encodecenterleft = encode02.data.data.map((val) => val.idxCde)
-      const dateArr: string[] = [String(curDate.getFullYear() - 2 + '12'), String(curDate.getFullYear() - 1 + '12'), defDate]
-      const centerLeftParam: Prama = JSON.parse(getDatesParamsNew(dateArr, [citycode], encodecenterleft, [currentProvider.gysbm], businesstype))
-      const centerLeftPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerLeftParam)
-      //center-center图表请求参数
-      const encodeCenter = encode03.data.data.map((val) => val.idxCde)
-      const centerParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodeCenter, [currentProvider.gysbm], businesstype))
-      const centerPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerParam)
-      //center-right图表请求参数
-      const encodecenterright = encode04.data.data.map((val) => val.idxCde)
-      const centerRightParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodecenterright, [currentProvider.gysbm], businesstype))
-      const centerRightPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerRightParam)
-      //bottom-left图表请求参数
-      const encodebottomleft = encode05.data.data.map((val) => val.idxCde)
-      const encodeBottomParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodebottomleft, [currentProvider.gysbm], businesstype))
-      const bottomLeftPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, encodeBottomParam)
-      //bottom-right图表请求参数
-      const encodebottomright = encode06.data.data.map((val) => val.idxCde)
-      const dateList: string[] = Array.from({ length: 12 }, (v, k) => {
-        const d = k + 1 > 9 ? k + 1 : '0' + (k + 1)
-        return curDate.getFullYear() + '-' + d
-      })
-      const encodeBottomRightParam: Prama = JSON.parse(getDatesParamsNew(dateList, [citycode], encodebottomright, [currentProvider.gysbm], businesstype))
-      const bottomRightPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, encodeBottomRightParam)
-
-      const reqArr = [topPro, centerLeftPro, centerPro, centerRightPro, bottomLeftPro, bottomRightPro]
-      handleAllDataRequest(t_this, reqArr, providerList, encodeMap)
-    })
-    .catch((e) => {
-      _this.$message.error('指标加载失败,请刷新重试！')
-    })
-    .finally(() => {
+    const providerList = await requestPostData<Record<string, string>, ResponseBody, unknown>(getProvider, { accountCode: citycode, monthId: date, ywlx: businesstype })
+    //这里filter取到的是数组，[0]取第一位
+    const currentProvider: any = providerList.data.data.filter((ele: any) => ele.gysjc === currentProviderJc.gysjc)[0]
+    if (!providerList.data.data || providerList.data.data.length === 0) {
+      _this.$message.error('供应商列表加载失败！')
       store.commit('setIsLoading', false)
-    })
+      return
+    }
+    if (!currentProvider) {
+      _this.$message.error('供应商简称检索失败！')
+      store.commit('setIsLoading', false)
+      return
+    }
+    //获取该页面所有图表的指标编码
+    Promise.all([
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0301' }),
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0302' }),
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0303' }),
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0304' }),
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0305' }),
+      requestPostData<{ idxGroup: string }, ResponseBody, unknown>(getEncode, { idxGroup: '0306' })
+    ])
+      .then(([encode01, encode02, encode03, encode04, encode05, encode06]) => {
+        const t_this = _this
+        const encodeMap = {
+          encode01,
+          encode02,
+          encode03,
+          encode04,
+          encode05,
+          encode06
+        }
+        //top图表请求参数
+        const encodetop = encode01.data.data.map((val) => val.idxCde)
+        const topParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodetop, [currentProvider.gysbm], businesstype))
+        const topPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, topParam)
+        //center-eft图表请求参数
+        const encodecenterleft = encode02.data.data.map((val) => val.idxCde)
+        const dateArr: string[] = [String(curDate.getFullYear() - 2 + '-12'), String(curDate.getFullYear() - 1 + '-12'), date]
+        const centerLeftParam: Prama = JSON.parse(getDatesParamsNew(dateArr, [citycode], encodecenterleft, [currentProvider.gysbm], businesstype))
+        const centerLeftPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerLeftParam)
+        //center-center图表请求参数
+        const encodeCenter = encode03.data.data.map((val) => val.idxCde)
+        const centerParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodeCenter, [currentProvider.gysbm], businesstype))
+        const centerPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerParam)
+        //center-right图表请求参数
+        const encodecenterright = encode04.data.data.map((val) => val.idxCde)
+        const centerRightParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodecenterright, [currentProvider.gysbm], businesstype))
+        const centerRightPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, centerRightParam)
+        //bottom-left图表请求参数
+        const encodebottomleft = encode05.data.data.map((val) => val.idxCde)
+        const encodeBottomParam: Prama = JSON.parse(getDatesParamsNew([date], [citycode], encodebottomleft, [currentProvider.gysbm], businesstype))
+        const bottomLeftPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, encodeBottomParam)
+        //bottom-right图表请求参数
+        const encodebottomright = encode06.data.data.map((val) => val.idxCde)
+        const dateList: string[] = Array.from({ length: 12 }, (v, k) => {
+          const d = k + 1 > 9 ? k + 1 : '0' + (k + 1)
+          return curDate.getFullYear() + '-' + d
+        })
+        const encodeBottomRightParam: Prama = JSON.parse(getDatesParamsNew(dateList, [citycode], encodebottomright, [currentProvider.gysbm], businesstype))
+        const bottomRightPro = requestPostData<Prama, ResponseBody, unknown>(encodeUrl, encodeBottomRightParam)
+
+        const reqArr = [topPro, centerLeftPro, centerPro, centerRightPro, bottomLeftPro, bottomRightPro]
+        handleAllDataRequest(t_this, reqArr, providerList, encodeMap, currentProvider)
+      })
+      .catch((e) => {
+        _this.$message.error('指标加载失败,请刷新重试！')
+      })
+      .finally(() => {
+        store.commit('setIsLoading', false)
+      })
+  } catch (error) {
+    _this.$message.error('供应商编码加载过程失败！')
+  }
 }
 
 export { updateProviderDetailView }

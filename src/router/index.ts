@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext, Router } from 'vue-router'
 import store from '@/store/index'
 import { requestPostData } from '../http/http'
+import Home from '../views/Home.vue'
 import qs from 'qs'
 
 const routes: Array<RouteRecordRaw> = [
@@ -37,7 +38,10 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
       console.log(error)
     }
   }
-  store.commit('setCurrentPage', to.name)
+  //   store.commit('setCurrentPage', to.name)
   next()
+})
+router.afterEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+  store.commit('setCurrentPage', to.name)
 })
 export default router

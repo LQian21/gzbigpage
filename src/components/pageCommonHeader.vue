@@ -1,21 +1,25 @@
 <template>
   <div class="page-header">
     <div class="left-select">
-      <a-month-picker @change="handleDateChange" placeholder="选择年月" :locale="zhLocale" :default-value="moment(defDate, dateFmater)">
+      <a-month-picker v-show="storePage !== 'detailview'" @change="handleDateChange" placeholder="选择年月" :locale="zhLocale" :value="moment(defDate, dateFmater)">
         <template v-slot:suffixIcon><CaretDownFilled /></template>
       </a-month-picker>
-      <a-select v-model:value="cityValue" style="width: 120px" @change="handleCityChange">
-        <template v-slot:suffixIcon><CaretDownFilled /></template>
-        <a-select-option v-for="(val, key) in cityList" :value="key" :key="key">{{ val }}</a-select-option>
-      </a-select>
-      <a-select v-model:value="typeValue" style="width: 120px" @change="handleTypeChange">
-        <template v-slot:suffixIcon><CaretDownFilled /></template>
-        <a-select-option value="all">全部业务</a-select-option>
-        <a-select-option value="asset">资产类</a-select-option>
-        <a-select-option value="cost">成本费</a-select-option>
-        <a-select-option value="income">收入</a-select-option>
-        <a-select-option value="other">其他</a-select-option>
-      </a-select>
+      <span v-show="storePage !== 'detailview'">
+        <a-select v-model:value="cityValue" style="width: 120px" @change="handleCityChange">
+          <template v-slot:suffixIcon><CaretDownFilled /></template>
+          <a-select-option v-for="(val, key) in cityList" :value="key" :key="key">{{ val }}</a-select-option>
+        </a-select>
+      </span>
+      <span v-show="storePage !== 'detailview'">
+        <a-select v-model:value="typeValue" style="width: 120px" @change="handleTypeChange">
+          <template v-slot:suffixIcon><CaretDownFilled /></template>
+          <a-select-option value="all">全部业务</a-select-option>
+          <a-select-option value="asset">资产类</a-select-option>
+          <a-select-option value="cost">成本费</a-select-option>
+          <a-select-option value="income">收入</a-select-option>
+          <a-select-option value="other">其他</a-select-option>
+        </a-select>
+      </span>
     </div>
     <div class="center-title">
       <h1 @click="changePage">贵州省电信管会系统-供应商{{ titleText }}情况</h1>
@@ -50,26 +54,37 @@ export default defineComponent({
     CaretDownFilled
   },
   setup() {
+    const instance = getCurrentInstance() as ComponentInternalInstance //vue的this实例
+    const _this = instance.appContext.config.globalProperties //全局对象属性
     //时间选择
     const dateValue = ref<Date>(new Date())
     const zhLocale = ref<Record<string, any>>(locale)
     const dateFmater: dateFmater = 'YYYY-MM'
     const curDate = new Date()
-    const defDate = curDate.getMonth() === 0 ? curDate.getFullYear() - 1 + '-12' : curDate.getFullYear() + (curDate.getMonth() > 8 ? '-' + (curDate.getMonth() + 1) : '-0' + (curDate.getMonth() + 1))
+    const defDateSys =
+      curDate.getMonth() === 0 ? curDate.getFullYear() - 1 + '-12' : curDate.getFullYear() + (curDate.getMonth() > 8 ? '-' + (curDate.getMonth() + 1) : '-0' + (curDate.getMonth() + 1))
+    // const defDate = store.state.selectDate || defDateSys
+    const defDate = ref(store.state.selectDate) || ref(defDateSys)
     const handleDateChange: OneArgVoidFun<moment.Moment> = (value: moment.Moment) => {
       const sdate = value.format('YYYY-MM')
       console.log(value)
+      //   defDate.value = moment(value, dateFmater)
+      defDate.value = sdate
       store.commit('setSelectDate', sdate)
     }
     //城市选择
-    const cityValue = ref('A52')
+    // const cityValue = store.state.cityCode || ref('A52')
+    // const cityValue = ref(store.state.cityCode)
+    const cityValue = computed(() => {
+      return store.state.cityCode
+    })
     const cityList: Record<string, string> = GZProvinceCityItem
     const handleCityChange: OneArgVoidFun<string> = (value) => {
       console.log(value, store.state.currntPage)
       store.commit('setCityCode', value)
     }
     //类型选择
-    const typeValue = ref('all')
+    const typeValue = ref(store.state.buniessType)
     const handleTypeChange: OneArgVoidFun<string> = (value) => {
       store.commit('setBuniessType', value)
       console.log(value)
@@ -84,8 +99,7 @@ export default defineComponent({
       rightWeek.value = getFormatDate().week
     }
     let timer: number
-    const instance = getCurrentInstance() as ComponentInternalInstance //vue的this实例
-    const _this = instance.appContext.config.globalProperties //全局对象属性
+
     onMounted(() => {
       timer = window.setInterval(updateDate, 1000)
       console.log(zhLocale)
@@ -110,26 +124,40 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
     const changePage: () => void = () => {
-      const routelist: string[] = Object.keys(Titles)
-      const currentIndex: number = routelist.indexOf(route.name as string)
-      const toPage: string = currentIndex + 1 > 2 ? routelist[0] : routelist[currentIndex + 1]
-      router.push({ name: toPage, params: { userId: 123 } })
+      //   const routelist: string[] = Object.keys(Titles)
+      //   const currentIndex: number = routelist.indexOf(route.name as string)
+      //   const toPage: string = currentIndex + 1 > 2 ? routelist[0] : routelist[currentIndex + 1]
+      let toPage = 'keypointview'
+      if (route.name === 'detailview') {
+        toPage = 'keypointview'
+      } else if (route.name === 'allview') {
+        toPage = 'keypointview'
+      } else {
+        toPage = 'allview'
+      }
+      router.push({ name: toPage })
     }
     //监听全局的参数变化
     const storeDate: ComputedRef<string> = computed(() => store.state.selectDate)
     const storeType: ComputedRef<string> = computed(() => store.state.buniessType)
     const storeCity: ComputedRef<string> = computed(() => store.state.cityCode)
     const storePage: ComputedRef<string> = computed(() => store.state.currntPage)
-    watch<ComputedRef<string>[], false>([storeDate, storeType, storeCity, storePage], ([c_d, c_t, c_c, c_p]) => {
+    watch<ComputedRef<string>[], false>([storeDate, storeType, storeCity, storePage], ([c_d, c_t, c_c, c_p], [preDate, prevType, preCity, prePage]) => {
       store.commit('setIsLoading', true)
       try {
         const currntPage = c_p as PageType
+        const oldPage = prePage as PageType
+        // if (oldPage !== currntPage) {
+        //   defDate.value = store.state.selectDate
+        //   cityValue.value = store.state.cityCode
+        //   typeValue.value = store.state.buniessType
+        // }
         currntPage === 'allview' && updateProviderAllView(_this)
         currntPage === 'detailview' && updateProviderDetailView(_this)
         currntPage === 'keypointview' && updateProviderKeypointView(_this)
       } catch (error) {
         _this.$message.error(error)
-        store.commit('setIsLoading', false)
+        // store.commit('setIsLoading', false)
       }
     })
     return {
@@ -148,7 +176,8 @@ export default defineComponent({
       rightWeek,
       titleText,
       changePage,
-      cityList
+      cityList,
+      storePage
     }
   }
 })
@@ -164,21 +193,32 @@ export default defineComponent({
     padding-left: 50px;
     /deep/ .ant-select {
       margin-left: 20px;
+      .ant-select-selection {
+        background-color: #3a5697;
+        border-color: rgba(0, 0, 0, 0);
+        color: #fff;
+        font-weight: bold;
+      }
+      .ant-select-selection-selected-value {
+        font-size: 18px;
+        font-weight: bold;
+      }
     }
   }
   .center-title {
     width: 45%;
     text-align: center;
-    margin-top: 30px;
+    margin-top: 12px;
     h1 {
-      color: rgb(0, 183, 255);
+      color: transparent;
+      -webkit-background-clip: text;
+      background-image: -webkit-linear-gradient(bottom, #00ffd5, #c1f0fa);
       cursor: pointer;
-      //   color: #4cefff;4cefff
-      //   color: #fff;
-      //   font-family: Georgia;
       font-size: 40px;
-      font-weight: bold;
-      animation: text-pop-up-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+      font-weight: 900;
+      font-family: '黑体', '微软雅黑', '楷体';
+      //   text-shadow: 2px 2px 0px #46edff6e;
+      //   animation: text-pop-up-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     }
   }
   .right-date {
@@ -188,7 +228,7 @@ export default defineComponent({
     align-items: flex-end;
     justify-content: flex-end;
     i {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
       margin-right: 10px;
     }
@@ -203,23 +243,21 @@ export default defineComponent({
     color: #fff;
     font-weight: bold;
   }
-  .ant-select ::v-deep .ant-select-selection {
-    background-color: #3a5697;
-    border-color: rgba(0, 0, 0, 0);
-    color: #fff;
+  /deep/ .ant-select-arrow {
+    font-size: 16px;
+    color: #6197ef;
+  }
+  /deep/ .ant-calendar-picker-icon {
+    font-size: 16px;
+    color: #6197ef;
+  }
+  /deep/ .ant-calendar-picker-clear {
+    font-size: 16px;
+    color: #6197ef;
+  }
+  /deep/ .ant-calendar-picker-input {
+    font-size: 18px;
     font-weight: bold;
-  }
-  ::v-deep .ant-select-arrow {
-    font-size: 14px;
-    color: #6197ef;
-  }
-  ::v-deep .ant-calendar-picker-icon {
-    font-size: 14px;
-    color: #6197ef;
-  }
-  ::v-deep .ant-calendar-picker-clear {
-    font-size: 14px;
-    color: #6197ef;
   }
 }
 @keyframes text-pop-up-top {

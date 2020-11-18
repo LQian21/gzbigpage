@@ -1,4 +1,6 @@
+import { chartFontStyle } from '../static'
 const option = {
+  textStyle: chartFontStyle,
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -9,22 +11,22 @@ const option = {
   legend: {
     textStyle: {
       color: '#C7EBF9',
-      fontSize: 14
+      fontSize: 16
     },
     itemWidth: 10,
     itemHeight: 10,
     data: ['公开招标', '公开竞争性谈判', '公开比选', '单一来源采购(公示)', '单一来源采购(非公示)']
   },
   grid: {
-    left: '3%',
-    right: '4%',
+    top: 160,
     bottom: '3%',
     containLabel: true
   },
   xAxis: [
     {
       axisLabel: {
-        color: '#398FD1'
+        color: '#398FD1',
+        fontSize: 17
       },
       axisLine: {
         lineStyle: {
@@ -57,7 +59,8 @@ const option = {
       },
       axisLabel: {
         textStyle: {
-          color: '#398FD1'
+          color: '#398FD1',
+          fontSize: 16
         }
       },
       splitLine: {

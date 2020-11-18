@@ -5,6 +5,7 @@ import { getDatesParams, getDatesParamsNew } from '../../utils/commFun'
 import store from '../../store/index'
 import { inintChartsUpdate } from '../installchart'
 import { updatePage2PieData } from '../providerAllView/update.page.chart'
+import { Store } from 'vuex'
 // import { encodeUrl } from '../static'
 //取供应商接口
 const getProvider = '/bigScreen/guiz/supplierIndexData/supplierList'
@@ -227,7 +228,10 @@ function handleAllDataRequest(_this: Record<string, any>, reqArr: Promise<AxiosR
 // const date = window.sessionStorage.getItem("selectDate") as string
 
 const updateProviderKeypointView = async (_this: Record<string, any>) => {
-  const date = '2020-07'
+  //   const date = _this.$route.query.date || store.state.selectDate
+  //   const citycode = _this.$route.query.city || store.getters.getCityCode
+  //   const businesstype = _this.$route.query.type || store.state.buniessType
+  const date = store.state.selectDate
   const citycode = store.getters.getCityCode
   const businesstype = store.state.buniessType
   let providerList: AxiosResponse<ResponseBody>
@@ -235,9 +239,15 @@ const updateProviderKeypointView = async (_this: Record<string, any>) => {
   try {
     //请求供应商编码和名称
     providerList = await requestPostData<Record<string, string>, ResponseBody, unknown>(getProvider, { accountCode: citycode, monthId: date, ywlx: businesstype })
+    if (!(providerList.data.data && providerList.data.data.length > 0)) {
+      _this.$message.error('本月暂无供应商！')
+      store.commit('setIsLoading', false)
+      return
+    }
   } catch (error) {
     _this.$message.error('供应商编码加载失败,请刷新重试！')
   }
+
   //旧的指标加载饼图的数据
   updatePage2PieData()
   //获取该页面所有图表的指标编码

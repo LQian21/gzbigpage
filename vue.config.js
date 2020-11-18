@@ -55,6 +55,12 @@ module.exports = {
         changeOrigin: true,
         secure: false
         // pathRewrite: { '^/cpms/mnpl': '' }
+      },
+      '/channel/': {
+        target: 'http://192.168.1.167:8750/',
+        changeOrigin: true,
+        secure: false
+        // pathRewrite: { '^/cpms/mnpl': '' }
       }
     }
   }

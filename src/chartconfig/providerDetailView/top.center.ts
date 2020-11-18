@@ -1,6 +1,8 @@
 import echarts from 'echarts'
 const dataArr = 95.36
+import { chartFontStyle } from '../static'
 const option = {
+  textStyle: chartFontStyle,
   title: {
     show: true,
     text: '得分情况',
@@ -23,18 +25,19 @@ const option = {
       axisLine: {
         lineStyle: {
           color: [
-            [dataArr / 100, new echarts.graphic.LinearGradient(
-              0, 0, 1, 0,
-              [{
-                      offset: 0,
-                      color: '#42C6F7',
-                  },
-                  {
-                      offset: 1,
-                      color: '#D155EF',
-                  }
-              ]
-          )],
+            [
+              dataArr / 100,
+              new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                {
+                  offset: 0,
+                  color: '#42C6F7'
+                },
+                {
+                  offset: 1,
+                  color: '#D155EF'
+                }
+              ])
+            ],
             [1, '#2E47A4']
           ],
           width: 15

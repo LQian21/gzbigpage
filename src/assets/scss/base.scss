@@ -142,7 +142,6 @@ body {
       width: 50%;
       height: 100%;
       background: url('../box_back.jpg') no-repeat;
-      background-size: cover;
       z-index: -1;
     }
     &::after{
@@ -155,8 +154,10 @@ body {
       height: 100%;
       background: url('../box_back.jpg') no-repeat;
       background-position-x: right;
-      background-size: cover;
       z-index: -1;
+    }
+    &::before,&::after{
+        background-size: cover;
     }
     //设置title
     display: flex;
@@ -196,4 +197,103 @@ body {
         flex: 1;
     }
 }
+.chart-unit-text{
+    position: absolute;
+    right: 15px;
+    top:75px;
+    font-size: 16px;
+    font-weight: bold;
+    color: '#fff';
+}
+.test_triangle_border{
 
+    width:140px;
+
+   padding: 10px;
+
+    position:relative;
+
+}
+
+.test_triangle_border .popup{
+
+    background:rgb(96, 188, 224);
+
+    padding:10px 20px;
+
+
+    border-radius:4px;
+
+    position:absolute;
+
+    top:30px;
+
+    left:30px;
+
+    border:2px solid rgb(22, 240, 240);
+    font-size: 17px;
+    .name{
+        font-weight: bold;
+        color:#fff; 
+        height: 22px;
+        line-height: 22px;
+    }
+    .num{
+        font-weight: bold;
+        color: rgb(23, 157, 247);
+        height: 18px;
+        line-height: 18px;
+    }
+
+}
+
+.test_triangle_border .popup span{
+
+    display:block;
+
+    width:0;
+
+    height:0;
+
+    border-width:10px 10px 10px 10px;
+
+    border-style:solid;
+
+    border-color:transparent rgb(22, 240, 240) transparent  transparent;
+
+    position:absolute;
+
+    top:calc(50% - 10px);
+
+    left:-20px;/* 三角形居中显示 */
+
+    margin-bottom:-10px;/* 三角形居中显示 */
+
+}
+
+.test_triangle_border .popup em{
+
+    display:block;
+
+    width:0;
+
+    height:0;
+
+    border-width:10px 10px 10px 10px;
+
+    border-style:solid;
+
+    border-color:transparent rgb(96, 188, 224) transparent  transparent;
+
+    position:absolute;
+
+    top:-10px;
+
+    left:-7px;
+
+}
+#all-view-right-bottom,#keypoint-view-bottom-right{
+&>div:nth-child(2){
+    background: rgba(255, 255, 255, 0) !important;
+}
+}

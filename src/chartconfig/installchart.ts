@@ -16,8 +16,11 @@ import option13 from './providerKeypointView/bottom.left'
 import option14 from './providerKeypointView/bottom.center'
 import option15 from './providerKeypointView/bottom.right'
 
+import mapConfig from './map'
+
 import { onMounted } from 'vue'
 import echarts from 'echarts'
+import store from '../store'
 
 export interface PageView<T> {
   child: T
@@ -35,7 +38,8 @@ export const pageChartsConfig: Record<PageName, PageView<Record<string, any>>> =
       'all-view-left-bottom': option3,
       'all-view-center-bottom': option4,
       'all-view-right-top': option5,
-      'all-view-right-bottom': option6
+      'all-view-right-bottom': option6,
+      'all-view-center-map': mapConfig
     },
     page: ''
   },
@@ -74,6 +78,36 @@ const inintChartsUpdate: FuncPstringVoid = (page: PageName) => {
   Object.keys(currentPage).forEach((val: string) => {
     const box = echarts.init(document.getElementById(val) as HTMLDivElement)
     currentPage[val] && box.setOption(currentPage[val])
+    if (page === 'providerKeypointView') {
+      if (val === 'keypoint-view-top-left') {
+        box.off('click')
+        box.on('click', 'yAxis.category', function(params: any) {
+          console.log(params)
+          store.commit('setKeypointProvider', { gysjc: params.value })
+        })
+      }
+      if (val === 'keypoint-view-top-right') {
+        box.off('click')
+        box.on('click', 'xAxis.category', function(params: any) {
+          console.log(params)
+          store.commit('setKeypointProvider', { gysjc: params.value })
+        })
+      }
+      if (val === 'keypoint-view-bottom-center') {
+        box.off('click')
+        box.on('click', 'xAxis.category', function(params: any) {
+          console.log(params)
+          store.commit('setKeypointProvider', { gysjc: params.value })
+        })
+      }
+    }
+    if (page === 'providerAllView' && val === 'all-view-center-map') {
+      box.off('click')
+      box.on('click', function(params: any) {
+        console.log(params)
+        store.commit('setCityCode', params.data.value2)
+      })
+    }
   })
 }
 export { inintCharts, inintChartsUpdate }

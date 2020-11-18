@@ -1,6 +1,10 @@
 <template>
   <a-modal v-model:visible="show" wrapClassName="table-modal-list-box" width="75%">
-    <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 240 }" />
+    <a-table :columns="columns" :data-source="data" :pagination="false" :scroll="{ y: 240 }">
+      <template v-slot:redtext="{ text }">
+        <i class="red-text">{{ text }}</i>
+      </template>
+    </a-table>
   </a-modal>
 </template>
 
@@ -33,6 +37,124 @@ export default defineComponent({
       show.value = isShowTabe
       pageType.value = type
     })
+    const columns1: any = [
+      {
+        title: '序号',
+        dataIndex: 'xh',
+        width: 50
+      },
+      {
+        title: '供应商编码',
+        dataIndex: 'gysbm',
+        width: 120
+      },
+      {
+        title: '供应商名称',
+        dataIndex: 'gysmc'
+      },
+      {
+        title: '法律诉讼',
+        dataIndex: 'flss',
+        slots: { customRender: 'redtext' }
+      },
+      {
+        title: '失信信息',
+        dataIndex: 'sxxx'
+      },
+      {
+        title: '行政处罚',
+        dataIndex: 'xzcf'
+      },
+      {
+        title: '经营异常',
+        dataIndex: 'jyyc'
+      }
+    ]
+    const columns2: any = [
+      {
+        title: '序号',
+        dataIndex: 'xh',
+        width: 50
+      },
+      {
+        title: '供应商编码',
+        dataIndex: 'gysbm',
+        width: 120
+      },
+      {
+        title: '供应商名称',
+        dataIndex: 'gysmc'
+      },
+      {
+        title: '合同编号',
+        dataIndex: 'contractCode'
+      },
+      {
+        title: '合同名称',
+        dataIndex: 'contractName'
+      },
+      {
+        title: '合同签约金额',
+        dataIndex: 'tradeSum'
+      },
+      {
+        title: '合同累计列账金额',
+        dataIndex: 'lzSum'
+      },
+      {
+        title: '合同累计付款金额',
+        dataIndex: 'fkSum'
+      }
+    ]
+    const columns3: any = [
+      {
+        title: '序号',
+        dataIndex: 'xh',
+        width: 50
+      },
+      {
+        title: '供应商编码',
+        dataIndex: 'gysbm',
+        width: 120
+      },
+      {
+        title: '供应商名称',
+        dataIndex: 'gysmc'
+      },
+      {
+        title: '上年列账金额',
+        dataIndex: 'snlzSum'
+      },
+      {
+        title: '本年列账金额',
+        dataIndex: 'bnlzSum',
+        slots: { customRender: 'redtext' }
+      },
+      {
+        title: '本年已付款金额',
+        dataIndex: 'bnfkSum'
+      },
+      {
+        title: '未清偿挂账首笔（最早）时间',
+        dataIndex: 'wqcFirst'
+      }
+    ]
+    const columns4: any = [
+      {
+        title: '指标名称',
+        dataIndex: 'idxName'
+      },
+
+      {
+        title: '分值',
+        dataIndex: 'score'
+      },
+      {
+        title: '实际得分',
+        dataIndex: 'actualScore',
+        slots: { customRender: 'redtext' }
+      }
+    ]
     //请求弹框内容
     const date = computed(() => {
       return store.state.selectDate
@@ -42,51 +164,55 @@ export default defineComponent({
     })
 
     //弹框数据
-    const columns = [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        width: 150
-      },
-      {
-        title: 'Age',
-        dataIndex: 'age',
-        width: 150
-      },
-      {
-        title: 'Address',
-        dataIndex: 'address'
-      },
-      {
-        title: 'Address2',
-        dataIndex: 'address2'
-      },
-      {
-        title: 'Address3',
-        dataIndex: 'address3'
-      }
-    ]
-    const data = []
-    for (let i = 0; i < 100; i++) {
-      data.push({
-        key: i,
-        name: `Edward King ${i}`,
-        age: 32,
-        address: `London, Park Lane no. ${i}`,
-        address2: `London, Park Lane no. ${i}`,
-        address3: `London, Park Lane no. ${i}`
-      })
-    }
+
+    const data = ref([])
+    const columns = ref([])
     watch(show, (nval, oval) => {
       context.emit('change', nval)
       const type = pageType.value
+      data.value = []
       if (type === 'provider_num') {
-        requestPostData('/bigScreen/guiz/popup/supplierList', { accountCode: cityCode.value, monthId: '2020-07' })
+        columns.value = columns1
+        requestPostData('/bigScreen/guiz/popup/supplierList', { accountCode: cityCode.value, monthId: date.value })
           .then((res) => {
-            console.log(res)
+            const resdata: any = res.data
+            data.value = resdata.data
           })
           .catch((e) => {
-            _this.$message.error('数据加载失败！')
+            _this.$message.error('需要关注供应商数据加载失败！')
+          })
+      }
+      if (type === 'contract_num') {
+        columns.value = columns2
+        requestPostData('/bigScreen/guiz/popup/contractList', { accountCode: cityCode.value, monthId: '2020-07' })
+          .then((res) => {
+            const resdata: any = res.data
+            data.value = resdata.data
+          })
+          .catch((e) => {
+            _this.$message.error('需要关注合同数据加载失败！')
+          })
+      }
+      if (type === 'bill_num') {
+        columns.value = columns3
+        requestPostData('/bigScreen/guiz/popup/billList', { accountCode: cityCode.value, monthId: '2020-07' })
+          .then((res) => {
+            const resdata: any = res.data
+            data.value = resdata.data
+          })
+          .catch((e) => {
+            _this.$message.error('需要列账数据加载失败！')
+          })
+      }
+      if (type === 'score_num') {
+        columns.value = columns4
+        requestPostData('/bigScreen/guiz/popup/scoreList', { accountCode: cityCode.value, monthId: '2020-07' })
+          .then((res) => {
+            const resdata: any = res.data
+            data.value = resdata.data
+          })
+          .catch((e) => {
+            _this.$message.error('分数加载失败！')
           })
       }
     })
@@ -148,6 +274,16 @@ export default defineComponent({
   .ant-table-thead > tr > th,
   .ant-table-tbody > tr > td {
     padding: 10px 10px;
+    text-align: center;
+  }
+  .ant-table-tbody {
+    .red-text {
+      color: #ff4b72;
+    }
+  }
+  .ant-table-placeholder {
+    background-color: #177fd5;
+    border: none;
   }
 }
 </style>

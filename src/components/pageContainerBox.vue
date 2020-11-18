@@ -22,7 +22,7 @@ export default defineComponent({
   },
   setup(props, context) {
     const pagebox = ref<null | HTMLInputElement>(null)
-    const isfix = ref(props.config.isfix)
+    const isfix = ref<boolean>(props.config.isfix)
     let pageWidth: number
     let pageHeight: number
     const initPage: () => void = () => {

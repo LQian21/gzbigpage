@@ -14,11 +14,11 @@
           <p class="text"><i>供应商总数</i> <i>需关注供应商</i></p>
           <p class="number">
             <span class="lum-1"
-              ><i class="num">{{ labelItems[0].idxValue }}</i
+              ><i class="num">{{ labelItems[0] && labelItems[0].idxValue }}</i
               ><i class="unit">个</i></span
             >
             <span class="lum-2 active" @click="showModalTable('provider_num')"
-              ><i class="num">{{ labelItems[1].idxValue }}</i
+              ><i class="num">{{ labelItems[1] && labelItems[1].idxValue }}</i
               ><i class="unit">个</i></span
             >
           </p>
@@ -27,11 +27,11 @@
           <p class="text"><i>新签合同额</i> <i>需关注合同</i></p>
           <p class="number">
             <span class="lum-1"
-              ><i class="num">{{ (labelItems[2].idxValue / 10000).toFixed(1) }}</i
+              ><i class="num">{{ labelItems[2] && (labelItems[2].idxValue / 10000).toFixed(1) }}</i
               ><i class="unit">万</i></span
             >
             <span class="lum-2 active" @click="showModalTable('contract_num')"
-              ><i class="num">{{ labelItems[3].idxValue }}</i
+              ><i class="num">{{ labelItems[3] && labelItems[3].idxValue }}</i
               ><i class="unit">个</i></span
             >
           </p>
@@ -40,12 +40,12 @@
           <p class="text"><i>列账总额</i> <i>需关注列账数</i></p>
           <p class="number">
             <span class="lum-1"
-              ><i class="num">{{ (labelItems[4].idxValue / 10000).toFixed(0) }}</i
-              ><i class="unit">万</i></span
+              ><i class="num">{{ labelItems[4] && (labelItems[4].idxValue / 100000000).toFixed(3) }}</i
+              ><i class="unit">亿</i></span
             >
             <span class="lum-2 active" @click="showModalTable('bill_num')"
-              ><i class="num">{{ (labelItems[5].idxValue / 10000).toFixed(0) }}</i
-              ><i class="unit">万</i></span
+              ><i class="num">{{ labelItems[5] && (labelItems[5].idxValue / 100000000).toFixed(3) }}</i
+              ><i class="unit">亿</i></span
             >
           </p>
         </li>
@@ -53,12 +53,12 @@
           <p class="text"><i>已付金额</i> <i>余额</i></p>
           <p class="number">
             <span class="lum-1"
-              ><i class="num">{{ (labelItems[0].idxValue / 10000).toFixed(1) }}</i
-              ><i class="unit">万</i></span
+              ><i class="num">{{ labelItems[6] && (labelItems[4].idxValue / 100000000).toFixed(3) }}</i
+              ><i class="unit">亿</i></span
             >
             <span class="lum-2"
-              ><i class="num">{{ (labelItems[0].idxValue / 10000).toFixed(1) }}</i
-              ><i class="unit">万</i></span
+              ><i class="num">{{ labelItems[7] && (labelItems[7].idxValue / 100000000).toFixed(3) }}</i
+              ><i class="unit">亿</i></span
             >
           </p>
         </li>
@@ -67,14 +67,17 @@
     <div class="center-map" id="all-view-center-map"></div>
     <div class="center-bottom frame-back-box">
       <h2 class="chart-title">列账采购方式统计图</h2>
+      <div class="chart-unit-text" style="top:30px;">单位：万元</div>
       <div class="chart-box" id="all-view-center-bottom"></div>
     </div>
     <div class="right-top frame-back-box">
-      <h2 class="chart-title keypoint_part" @click="showModalTable('keypoint_part')">重点供应商在整个公司的占比堆积图</h2>
+      <h2 class="chart-title keypoint_part" @click="toKeyPointPage()">重点供应商在整个公司的占比堆积图</h2>
+      <div class="chart-unit-text">单位：万元</div>
       <div class="chart-box" id="all-view-right-top"></div>
     </div>
     <div class="right-bottom frame-back-box">
       <h2 class="chart-title">列账趋势分析图</h2>
+      <div class="chart-unit-text">单位：万元</div>
       <div class="chart-box" id="all-view-right-bottom"></div>
     </div>
     <userModalTable :isShowTabe="showTable" :type="tableType" @change="showStatusChange"></userModalTable>
@@ -83,12 +86,14 @@
 
 <script lang="ts">
 import userModalTable from '../components/allview/userModalTable.vue'
-import { defineComponent, ref, onMounted, getCurrentInstance, ComponentInternalInstance, computed } from 'vue'
+import { defineComponent, ref, onMounted, getCurrentInstance, ComponentInternalInstance, computed, watch } from 'vue'
 import { OneArgVoidFun } from '../utils/commFun'
+import { useRouter } from 'vue-router'
 import echarts from 'echarts'
 import mapConfig from '../chartconfig/map'
 import { inintCharts } from '../chartconfig/installchart'
 import store from '../store'
+import { requestPostData } from '../http/http'
 // import gzMapJson from 'echarts/map/json/province/guizhou.json'
 const gzMapJson = require('echarts/map/json/province/guizhou.json')
 export default defineComponent({
@@ -97,6 +102,8 @@ export default defineComponent({
     userModalTable
   },
   setup(props, context) {
+    const instance = getCurrentInstance() as ComponentInternalInstance //vue的this实例
+    const _this = instance.appContext.config.globalProperties //全局对象属性
     //头部的一排label值
     const labelItems = computed(() => {
       return store.state.allviewItems
@@ -115,23 +122,59 @@ export default defineComponent({
     //注册地图
     const regiseterMap: () => void = () => {
       echarts.registerMap('guizhou', gzMapJson)
-      const mapBox = echarts.init(document.getElementById('all-view-center-map') as HTMLCanvasElement)
-      mapBox.setOption(mapConfig)
+      //   const mapBox = echarts.init(document.getElementById('all-view-center-map') as HTMLCanvasElement)
+      //   mapBox.setOption(mapConfig)
     }
     onMounted(() => {
-      const instance = getCurrentInstance() as ComponentInternalInstance
-      const a = instance.appContext.config.globalProperties
-      console.log(a)
       regiseterMap()
+    })
+    //选择同步地图
+    const cityValue = computed(() => {
+      return store.state.cityCode
+    })
+    watch(cityValue, (nv, ov) => {
+      requestPostData('/channel/map/assembleJsonObject', { parentOrgCode: nv })
+        .then((res) => {
+          const resdata = res.data as any
+          if (!resdata.features) {
+            const mapBox = echarts.init(document.getElementById('all-view-center-map') as HTMLCanvasElement)
+            mapBox.clear()
+            _this.$message.warning('没有加载到对应地图！')
+          } else {
+            echarts.registerMap('guizhou', res.data as any)
+            const mapBox = echarts.init(document.getElementById('all-view-center-map') as HTMLCanvasElement)
+            mapBox.clear()
+            if (nv === 'A52') {
+              mapBox.setOption(mapConfig)
+            } else {
+              const config = JSON.parse(JSON.stringify(mapConfig))
+              config.series[0].data = []
+              config.series[1].data = []
+              mapBox.setOption(config)
+            }
+          }
+        })
+        .catch((e) => {
+          console.log(e)
+        })
     })
     //挂载图表
     inintCharts('providerAllView')
+    //跳转重点页面
+    const router = useRouter()
+    const toKeyPointPage: () => void = () => {
+      //   const { href } = router.resolve({ name: 'keypointview', params: { date: store.state.selectDate, type: store.state.buniessType, city: store.state.cityCode } })
+      const { href } = router.resolve({ name: 'keypointview', query: { date: store.state.selectDate, type: store.state.buniessType, city: store.state.cityCode } })
+      window.open(href, '_blank')
+      //   router.push({ name: 'keypointview', query: { date: store.state.selectDate, type: store.state.buniessType, city: store.state.cityCode } })
+    }
     return {
       showTable,
       tableType,
       showModalTable,
       showStatusChange,
-      labelItems
+      labelItems,
+      toKeyPointPage
     }
   }
 })
@@ -204,7 +247,7 @@ export default defineComponent({
           margin-left: 20px;
           margin-top: 25px;
           margin-bottom: 0;
-          font-size: 15px;
+          font-size: 17px;
           letter-spacing: -2px;
           i {
             font-weight: bold;
@@ -225,7 +268,7 @@ export default defineComponent({
           margin-left: 20px;
           .lum-1 {
             display: inline-block;
-            width: 75px;
+            width: 80px;
             white-space: nowrap;
           }
           .lum-2 {
@@ -257,7 +300,7 @@ export default defineComponent({
           }
           .unit {
             margin-left: 3px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
           }
         }

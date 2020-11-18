@@ -1,4 +1,6 @@
+import { chartFontStyle } from '../static'
 const option = {
+  textStyle: chartFontStyle,
   radar: {
     // shape: 'circle',
     radius: '80%',
@@ -8,7 +10,7 @@ const option = {
     name: {
       textStyle: {
         color: '#C9EDFC',
-        fontSize: '15',
+        fontSize: '16',
         borderRadius: 3,
         padding: [3, 5]
       }

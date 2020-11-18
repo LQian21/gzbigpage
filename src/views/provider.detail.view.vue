@@ -16,7 +16,7 @@
         <h2 class="chart-title">近3年采购来源渠道分析图</h2>
         <div class="chart-box" id="detail-view-top-left"></div>
       </div>
-      <div class="center-center frame-back-box">
+      <div class="center-center frame-back-box" @click="showModalTable('score_num')">
         <h2 class="chart-title">综合指标得分情况（满分100）</h2>
         <div class="chart-box" id="detail-view-top-center"></div>
       </div>
@@ -35,28 +35,48 @@
         <div class="chart-box" id="detail-view-bottom-right"></div>
       </div>
     </div>
+    <userModalTable :isShowTabe="showTable" :type="tableType" @change="showStatusChange"></userModalTable>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
+import userModalTable from '../components/allview/userModalTable.vue'
+import { OneArgVoidFun } from '../utils/commFun'
 import { inintCharts } from '../chartconfig/installchart'
 import store from '../store/index'
 export default defineComponent({
   name: '',
+  components: {
+    userModalTable
+  },
   setup() {
     const thTexts: string[] = ['供应商编码', '供应商名称', '法人代表', '注册资本（万）', '实缴资本（万）', '资本差异（%）', '信用信息', '法律纠纷（次）', '不良记录（笔）']
     const data: number[] = Array.from({ length: 9 }, (v, k) => k)
     const tabledata = computed(() => {
       return store.state.detailTabledate
     })
-
+    //显示弹框内容，业务写在弹框的业务组件里
+    const showTable = ref(false)
+    const tableType = ref('')
+    const showModalTable: OneArgVoidFun<string> = (type) => {
+      console.log(type, showTable.value)
+      tableType.value = type
+      showTable.value = true
+    }
+    const showStatusChange: OneArgVoidFun<boolean> = (val) => {
+      showTable.value = val
+    }
     //挂载图表
     inintCharts('providerDetailView')
     return {
       thTexts,
       data,
-      tabledata
+      tabledata,
+      showTable,
+      tableType,
+      showModalTable,
+      showStatusChange
     }
   }
 })

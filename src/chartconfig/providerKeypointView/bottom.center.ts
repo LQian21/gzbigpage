@@ -1,4 +1,6 @@
+import { chartFontStyle } from '../static'
 const option = {
+  textStyle: chartFontStyle,
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -9,11 +11,12 @@ const option = {
   legend: {
     textStyle: {
       color: '#C7EBF9',
-      fontSize: 14
+      fontSize: 16
     },
+    right: 90,
     itemWidth: 15,
     itemHeight: 15,
-    data: ['公开招标', '邀请招标','单一来源采购(公示)','邀请询价','邀请竞争性谈判', '公开比选','公开询价','单一来源采购(非公示)','公开竞争性谈判','电商采购']
+    data: ['公开招标', '邀请招标', '单一来源采购(公示)', '邀请询价', '邀请竞争性谈判', '公开比选', '公开询价', '单一来源采购(非公示)', '公开竞争性谈判', '电商采购']
   },
   grid: {
     left: '3%',
@@ -21,33 +24,34 @@ const option = {
     bottom: '3%',
     containLabel: true
   },
-  xAxis:{
-      axisLabel: {
-        interval:0, //强制显示文字
-        color: '#398FD1'
-      },
-      axisLine: {
-        lineStyle: {
-          color: '#183888'
-        }
-      },
-      axisTick: {
-        alignWithLabel: true,
-        lineStyle: {
-          width: 2,
-          color: '#398FD1'
-        }
-      },
-      splitLine: {
-        lineStyle: {
-          color: '#183888'
-        }
-      },
-      data: ['菜鸟网络', '长亭科技', '字节跳动', '字节跳动', '字节跳动', '字节跳动']
+  xAxis: {
+    triggerEvent: true,
+    axisLabel: {
+      interval: 0, //强制显示文字
+      color: '#398FD1',
+      fontSize: 16
     },
+    axisLine: {
+      lineStyle: {
+        color: '#183888'
+      }
+    },
+    axisTick: {
+      alignWithLabel: true,
+      lineStyle: {
+        width: 2,
+        color: '#398FD1'
+      }
+    },
+    splitLine: {
+      lineStyle: {
+        color: '#183888'
+      }
+    },
+    data: ['菜鸟网络', '长亭科技', '字节跳动', '字节跳动', '字节跳动', '字节跳动']
+  },
   yAxis: [
     {
-      name: '单位：个',
       axisTick: {
         lineStyle: {
           width: 2,
@@ -56,7 +60,8 @@ const option = {
       },
       axisLabel: {
         textStyle: {
-          color: '#398FD1'
+          color: '#398FD1',
+          fontSize: 16
         }
       },
       splitLine: {
@@ -73,7 +78,7 @@ const option = {
       }
     }
   ],
-  color: ['#16D4D2', '#F2DA32', '#58ABF1', '#6A50FF', '#D55CE7','red','blue','grey','yellow','green'],
+  color: ['#16D4D2', '#F2DA32', '#58ABF1', '#6A50FF', '#D55CE7', 'red', 'blue', 'grey', 'yellow', 'green'],
   series: [
     {
       name: '公开招标',
@@ -285,7 +290,7 @@ const option = {
         }
       },
       data: [0, 0, 3, 2, 0, 4]
-    },
+    }
   ]
 }
 export default option
